@@ -52,7 +52,7 @@
    ```bash
    dotnet build
    ```
-### How to Run the Project on Linux
+## How to Run the Project on Linux
 
 ### Prerequisites
 
