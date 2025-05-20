@@ -11,6 +11,40 @@
 - .NET 8.0  
 - C# 12  
 
+## How to Run the Project Using Docker
+
+If you want to run the project inside a Docker container, follow these steps:
+
+### Prerequisites
+
+- [Docker](https://www.docker.com/get-started) installed on your machine
+- The project cloned locally
+
+### Steps
+
+1. Open a terminal and navigate to the root folder of the project (where the `Dockerfile` is located):
+
+   ```bash
+   cd path/to/project-folder
+	```
+
+2. Build the Docker image (replace `project-name` with your desired image name):
+
+   ```bash
+   docker build -t project-name .
+   ```
+
+3. Run a container based on the image you just built:
+
+   ```bash
+   docker run --rm -it project-name
+   ```
+
+   * The `--rm` flag removes the container after it stops.
+   * The `-it` flags allow interactive terminal input/output.
+
+4. Your application will start inside the container and run as if it were running locally.
+
 ## How to Run the Project on Windows
 
 ### Option 1: Using Visual Studio
