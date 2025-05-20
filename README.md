@@ -11,7 +11,7 @@
 - .NET 8.0  
 - C# 12  
 
-## ??? How to Run the Project on Windows
+## How to Run the Project on Windows
 
 ### Option 1: Using Visual Studio
 
@@ -52,4 +52,34 @@
    ```bash
    dotnet build
    ```
+How to Run the Project on Linux
 
+### Prerequisites
+
+- [.NET 8 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/8.0) installed
+- Git installed
+- A terminal (bash, zsh, etc.)
+
+### Steps
+
+1. Open a terminal and install the .NET 8 SDK if not already installed.  
+   Follow the official instructions for your distribution:  
+   [https://learn.microsoft.com/en-us/dotnet/core/install/linux](https://learn.microsoft.com/en-us/dotnet/core/install/linux)
+
+2. Clone the repository:
+   ```bash
+   git clone https://github.com/your-username/project-name.git
+   cd project-name
+````
+
+3. Run the project:
+
+   ```bash
+   dotnet run
+   ```
+
+4. (Optional) Build the project:
+
+   ```bash
+   dotnet build
+   ```
