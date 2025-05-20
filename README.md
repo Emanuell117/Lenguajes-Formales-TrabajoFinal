@@ -52,7 +52,7 @@
    ```bash
    dotnet build
    ```
-How to Run the Project on Linux
+### How to Run the Project on Linux
 
 ### Prerequisites
 
@@ -70,7 +70,7 @@ How to Run the Project on Linux
    ```bash
    git clone https://github.com/your-username/project-name.git
    cd project-name
-````
+	```
 
 3. Run the project:
 
