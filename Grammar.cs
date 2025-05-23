@@ -13,18 +13,44 @@ public class Grammar
     public void AddProduction(char lhs, List<List<char>> rhs)
     {
         Productions[lhs] = rhs;
-        Nonterminals.Add(lhs); // Asegurarse que LHS esta
+        Nonterminals.Add(lhs); // Asegurarse que LHS está
 
         foreach (var production in rhs)
         {
             foreach (var symbol in production)
             {
-                if (IsNonterminal(symbol))
-                    Nonterminals.Add(symbol); // Añadir RHS a nonterminals
+                if (char.IsUpper(symbol))
+                    Nonterminals.Add(symbol); // Añadir símbolos mayúsculas a no terminales
             }
         }
+
+        // Actualizar el conjunto de terminales
+        UpdateTerminals();
     }
 
     public bool IsNonterminal(char c) => Nonterminals.Contains(c);
-    public bool IsTerminal(char c) => !char.IsUpper(c) && c != 'e';
+    public bool IsTerminal(char c) => !char.IsUpper(c) && c != 'e' && Terminals.Contains(c);
+
+    // Método para actualizar automáticamente el conjunto de terminales basado en las producciones
+    public void UpdateTerminals()
+    {
+        // Reinicia el conjunto de terminales para evitar símbolos obsoletos
+        Terminals.Clear();
+
+        // Recorre todas las producciones
+        foreach (var production in Productions.Values)
+        {
+            foreach (var rhs in production)
+            {
+                foreach (var symbol in rhs)
+                {
+                    // Si el símbolo no es un no terminal y no es epsilon (e), es un terminal
+                    if (!IsNonterminal(symbol) && symbol != 'e')
+                    {
+                        Terminals.Add(symbol);
+                    }
+                }
+            }
+        }
+    }
 }

@@ -38,21 +38,19 @@ public class FirstFollowCalculator
     private bool AddFirstFromSequence(List<char> symbols, char nt)
     {
         bool added = false;
-        //Indica si los símbolos anteriores pueden derivar epsilon
         bool prevCanEpsilon = true;
         foreach (var symbol in symbols)
         {
             if (!prevCanEpsilon) break;
-            //Si es terminal
             if (_grammar.IsTerminal(symbol))
             {
                 added |= AddToSet(First[nt], symbol);
                 prevCanEpsilon = false;
             }
-            else if (symbol == 'e') // Tratar 'e' como epsilon
+            else if (symbol == 'e') // Tratar 'e' como ε
             {
                 added |= AddToSet(First[nt], 'e');
-                prevCanEpsilon = true; // Permite continuar con símbolos siguientes
+                prevCanEpsilon = true;
             }
             else
             {
@@ -79,48 +77,54 @@ public class FirstFollowCalculator
     //Calcular el conjunto Follow de la gramática
     public void ComputeFollow()
     {
-        //El primer follow de un simbolo inicial siempre es $
-        Follow[_grammar.StartSymbol].Add('$');
-        bool changed;
+        // Inicializar Follow del símbolo inicial aumentado
+        if (!_grammar.Nonterminals.Contains('Z'))
+        {
+            _grammar.Nonterminals.Add('Z');
+            Follow['Z'] = new HashSet<char>();
+        }
+        Follow['Z'].Add('$');
 
-        //Se ejecuta hasta que no haya nigun cambio en todo un recorrido
+        // Asegurar que Follow(S) incluya '$'
+        var startSymbol = _grammar.StartSymbol;
+        if (!Follow[startSymbol].Contains('$'))
+            Follow[startSymbol].Add('$');
+
+        bool changed;
         do
         {
             changed = false;
-
-            foreach (var (nt, productions) in _grammar.Productions)
+            foreach (var (lhs, productions) in _grammar.Productions)
             {
                 foreach (var production in productions)
                 {
                     for (int i = 0; i < production.Count; i++)
                     {
                         char symbol = production[i];
-
                         if (_grammar.IsNonterminal(symbol))
                         {
                             List<char> beta = production.Skip(i + 1).ToList();
                             HashSet<char> firstBeta = GetFirst(beta);
                             bool canEpsilon = beta.Count == 0 || firstBeta.Contains('e');
 
-                            // Agregar First(beta) - {e} al Follow(symbol]
-                            foreach (var terminal in firstBeta)
+                            // Agregar First(beta) - {e} a Follow[symbol]
+                            foreach (var terminal in firstBeta.Where(t => t != 'e'))
                             {
-                                if (terminal != 'e')
-                                {
-                                    changed |= AddToSet(Follow[symbol], terminal);
-                                }
+                                if (AddToSet(Follow[symbol], terminal))
+                                    changed = true;
                             }
 
-                            // Agregar Follow(nt) a Follow(symbol] solo si beta puede derivar e
+                            // Agregar Follow(lhs) a Follow[symbol] solo si beta puede derivar ε
                             if (canEpsilon)
                             {
-                                foreach (var followSymbol in Follow[nt])
+                                foreach (var followSymbol in Follow[lhs])
                                 {
-                                    changed |= AddToSet(Follow[symbol], followSymbol);
+                                    if (AddToSet(Follow[symbol], followSymbol))
+                                        changed = true;
                                 }
                             }
                         }
-                     }
+                    }
                 }
             }
         } while (changed);
@@ -130,7 +134,6 @@ public class FirstFollowCalculator
     private HashSet<char> GetFirst(List<char> symbols)
     {
         var result = new HashSet<char>();
-        // Devuelve epsilon si no hay nada
         if (symbols == null || symbols.Count == 0)
         {
             result.Add('e');
@@ -146,10 +149,10 @@ public class FirstFollowCalculator
                 result.Add(symbol);
                 canEpsilon = false;
             }
-            else if (symbol == 'e') // Caso especial para e
+            else if (symbol == 'e') // Tratar 'e' como ε
             {
                 result.Add('e');
-                canEpsilon = true; // Continúa procesando símbolos siguientes
+                canEpsilon = true;
             }
             else
             {

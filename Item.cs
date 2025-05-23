@@ -31,7 +31,7 @@ namespace ProyectoFormales
         }
 
         //Verifica si dos items son iguales para evitar duplicados
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
         {
             if (obj is Item other)
                 return LHS == other.LHS && Production.SequenceEqual(other.Production) && DotPosition == other.DotPosition;

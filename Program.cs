@@ -8,11 +8,16 @@ public class Program
         var grammar = new Grammar();
 
         //Numero de lineas a leer
-        int n = int.Parse(Console.ReadLine());
+        string input = Console.ReadLine() ?? string.Empty;
+        if (!int.TryParse(input, out int n))
+        {
+            Console.WriteLine("Invalid input. Please enter a valid integer.");
+            return;
+        }
 
         for (int i = 0; i < n; i++)
         {
-            string line = Console.ReadLine();
+            string line = Console.ReadLine() ?? string.Empty;
             // Separa la parte izquierda y derecha de la producción
             var parts = line.Split("->");
             char lhs = parts[0][0]; // Extrae el no terminal
@@ -31,8 +36,8 @@ public class Program
         bool isLL1 = false;
 
         //Parsers sin definir
-        IParser llParser = null;
-        IParser slrParser = null;
+        IParser? llParser = null;
+        IParser? slrParser = null;
 
         // Intenta crear un parser LL(1). Se lanza una excepción si no es LL(1)
         try
@@ -44,25 +49,25 @@ public class Program
 
         //Crea un parser SLR 
         var slrParserInstance = new SLRParser(grammar, firstFollow);
-        bool isSLR1 = slrParserInstance.IsSLR1();
+        bool isSlrGrammar = slrParserInstance.IsSLR1();
 
         //Si es LL1 y SLR1
-        if (isLL1 && isSLR1)
+        if (isLL1 && isSlrGrammar)
         {
             Console.WriteLine("Select a parser(T: for LL(1), B: for SLR(1), Q: quit):");
             llParser = new LLParser(grammar, firstFollow);
             slrParser = slrParserInstance;
             string choice;
-            while ((choice = Console.ReadLine()) != "Q")
+            while (!string.IsNullOrEmpty((choice = Console.ReadLine() ?? string.Empty)) && choice != "Q")
             {
                 if (choice == "T" || choice == "B")
                 {
                     var parser = choice == "T" ? llParser : slrParser;
                     while (true)
                     {
-                        string input = Console.ReadLine();
-                        if (string.IsNullOrWhiteSpace(input)) break;
-                        Console.WriteLine(parser.Parse(input) ? "yes" : "no");
+                        string userInput = Console.ReadLine() ?? string.Empty;
+                        if (string.IsNullOrWhiteSpace(userInput)) break;
+                        Console.WriteLine(parser.Parse(userInput) ? "yes" : "no");
                     }
                 }
             }
@@ -74,23 +79,91 @@ public class Program
             llParser = new LLParser(grammar, firstFollow);
             while (true)
             {
-                string input = Console.ReadLine();
-                if (string.IsNullOrWhiteSpace(input)) break;
+                string userInput = Console.ReadLine() ?? string.Empty;
+                if (string.IsNullOrWhiteSpace(userInput)) break;
                 //Verifica si una cadena dada es aceptada por LL(1)
-                Console.WriteLine(llParser.Parse(input) ? "yes" : "no");
+                Console.WriteLine(llParser.Parse(userInput) ? "yes" : "no");
             }
         }
         //Solo es SLR1
-        else if (isSLR1)
+        else if (isSlrGrammar)
         {
             Console.WriteLine("Grammar is SLR(1).");
             slrParser = new SLRParser(grammar, firstFollow);
+
+            Console.WriteLine("Options:");
+            Console.WriteLine("  F: full SLR info       - Mostrar toda la información del análisis SLR");
+            Console.WriteLine("  P: parsing table       - Mostrar las tablas ACTION y GOTO");
+            Console.WriteLine("  S: states              - Mostrar los estados LR(0)");
+            Console.WriteLine("  D: debug mode          - Analizar cada cadena paso a paso");
+            Console.WriteLine("  V: verify SLR(1)       - Verificar propiedades de la gramática SLR(1)");
+            Console.WriteLine("  T: test grammar        - Probar la gramática con cadenas de ejemplo");
+            Console.WriteLine("  Enter: normal mode     - Modo normal de análisis");
+
+            string option = Console.ReadLine() ?? string.Empty;
+
+            if (option == "F" || option == "f")
+            {
+                // Mostrar información completa del análisis SLR
+                ((SLRParser)slrParser).PrintFullSLRInfo();
+            }
+            else if (option == "P" || option == "p")
+            {
+                // Mostrar la tabla de análisis
+                ((SLRParser)slrParser).PrintParsingTable();
+            }
+            else if (option == "S" || option == "s")
+            {
+                // Mostrar los estados LR(0)
+                ((SLRParser)slrParser).PrintStates();
+            }
+            else if (option == "V" || option == "v")
+            {
+                // Verificar propiedades de la gramática SLR(1)
+                bool isValidSLR = ((SLRParser)slrParser).VerifySLR1Properties();
+                Console.WriteLine($"\\nResultado: La gramática {(isValidSLR ? "cumple" : "NO cumple")} con las propiedades SLR(1).");
+            }
+            else if (option == "T" || option == "t")
+            {
+                // Probar la gramática con cadenas de ejemplo
+                Console.WriteLine("Ingrese las cadenas de prueba (una por línea, línea vacía para terminar):");
+                var testStrings = new List<string>();
+                while (true)
+                {
+                    string testString = Console.ReadLine() ?? string.Empty;
+                    if (string.IsNullOrWhiteSpace(testString)) break;
+                    testStrings.Add(testString);
+                }
+
+                if (testStrings.Count > 0)
+                {
+                    ((SLRParser)slrParser).TestGrammar(testStrings);
+                }
+                else
+                {
+                    Console.WriteLine("No se ingresaron cadenas de prueba.");
+                }
+            }
+
+            bool debugMode = option == "D" || option == "d";
+
             while (true)
             {
-                string input = Console.ReadLine();
-                if (string.IsNullOrWhiteSpace(input)) break;
-                //Verifica si una cadena dada es aceptada por SLR(1)
-                Console.WriteLine(slrParser.Parse(input) ? "yes" : "no");
+                string userInput = Console.ReadLine() ?? string.Empty;
+                if (string.IsNullOrWhiteSpace(userInput)) break;
+
+                // Verificar si una cadena dada es aceptada por SLR(1)
+                if (debugMode)
+                {
+                    // Mostrar análisis paso a paso
+                    bool result = ((SLRParser)slrParser).ParseWithTrace(userInput);
+                    Console.WriteLine(result ? "yes" : "no");
+                }
+                else
+                {
+                    // Análisis normal
+                    Console.WriteLine(slrParser.Parse(userInput) ? "yes" : "no");
+                }
             }
         }
         //No es ninguna
